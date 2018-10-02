@@ -23,7 +23,10 @@ library(ggthemes)
 # Load the Data
 df <- read.csv('prosperLoanData.csv')
 
+#view the headings
 str(df)
+
+#view stats about the information
 summary(df)
 
 ```
@@ -37,6 +40,8 @@ summary(df)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots}
 
+
+#view a histogram on a variety of data points within the data
 histogram <- function(var, xlabel) {
     return(qplot(x = var, data = df, xlab = xlabel))
 }
@@ -54,25 +59,69 @@ ncol = 3)
 
 ```
 
+>Now lets look at two variables side by side that I we would typically consider linked, the loan amounts and loan payments
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots2}
 
+#view a histogram of two data points side by side
 grid.arrange(qplot(x = LoanOriginalAmount, 
                    data = df, binwidth=1000),
              qplot(x = MonthlyLoanPayment, 
                    data = df, binwidth = 50), ncol = 2)
 ```
 
+>We can see that these are both right skewed
+
+>Now lets look at information on Loan amounts by state, to see if these differ, we have intentionally picked out two states that are very different in terms of wealth per capita
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots3}
 
+#view two more histograms, this time we are filtering by state and looking at the same statistic in two different states
 grid.arrange(qplot(x = LoanOriginalAmount, 
-                   data = subset(df,  BorrowerState == 'CT'), ylab = 'Count for State = Connecticut', 
+                   data = subset(df,  BorrowerState == 'CT'), 
+                   ylab = 'Count for State = Connecticut', 
                    binwidth=1000),
              qplot(x = LoanOriginalAmount, 
-                   data = subset(df,  BorrowerState == 'WV'), ylab = 'Count for State = West Virginia', 
+                   data = subset(df,  BorrowerState == 'WV'), 
+                   ylab = 'Count for State = West Virginia', 
                    binwidth=1000), ncol = 2)
 ```
 
+>We can see above that even though the population of these states are very different in terms of wealth, they are quite similiar if we look at the amount ehey are borrowing.
+
+>Now lets look at some catergorical variables
+>First we are looking at the counts of homeowners vs non homeowners to see if they prefer to offer to loanee's with a home to use as collateral.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots4}
+
+#pie chart to show homeowner information
+ggplot(df, aes(x = IsBorrowerHomeowner)) + geom_bar() + 
+    geom_text(stat='count', aes(label=..count..), vjust=1.5)
+```
+
+>We can see above that there is roughly the same amount of each
+
+>Now lets look at the count of Loanee's by there Income Range, the reason behind this is so that we can see if there is a preference for the company when offering loans or if they specialise in offering to a certain type of Loanee.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots5}
+
+#pie chart to show income range information
+ggplot(df, aes(x = IncomeRange)) + geom_bar() + 
+    geom_text(stat='count', aes(label=..count..), vjust=1.5)
+```
+
+>We can see here that it is quite distributed, going forward we will sort this data so it is ordered correctly
+
+>Finally lets look at Prosper Rating, the lower the number the more risky the Loanee is deemed to be
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots6}
+
+#pie chart to show Prosper Rating information
+ggplot(df, aes(x = ProsperRating..numeric.)) + geom_bar() + 
+    geom_text(stat='count', aes(label=..count..), vjust=1.5)
+```
+
+>This is normally distributed, with maybe a slightly left skew. This reason behind looking at this was to understand if the company only offers loans to certain types of people.
 
 # Univariate Analysis
 
@@ -106,31 +155,35 @@ of the data? If so, why did you do this?
 
 ```{r echo=FALSE, Bivariate_Plots1}
 
+#this will produce a histogram of two different data points overlayed on top of each other
 ggplot(df, aes(x=LoanOriginalAmount, fill=factor(IsBorrowerHomeowner))) + 
   geom_density(alpha=0.2)
 
 ```
 
-> The above gives us some insight as to the size of loans people take out if they own homes, and if they do not. We can see that non-homeowners take a out more smaller loans whilst people who own a home take out more. The inflection point here is around 10,000.
+> The above gives us some insight as to the size of loans people take out if they own homes, and if they do not. We can see that non-homeowners take a out more smaller loans whilst people who own a home take out more. The inflection point here is around 10,000. The reason for us to look at this was to see if Home Owners may borrow more for maintenence to their property or if they borrow less as they could be perceived to be more wealthy.
 
 
 ```{r echo=FALSE, Bivariate_Plots2}
 
+#this will filter re-arrange the order of how you can view the data point which is catergorical variable
 df$IncomeRange = factor(df$IncomeRange,levels(df$IncomeRange)[c(1,2,4,5,6,3)])
 
-
-ggplot(subset(df,  IncomeRange != 'Not displayed'), aes(x=LoanOriginalAmount, fill=factor(IncomeRange))) + 
+#this will plot another overlay graph but omit anything in which the income range is not displayed
+ggplot(subset(df,  IncomeRange != 'Not displayed'), 
+       aes(x=LoanOriginalAmount, fill=factor(IncomeRange))) + 
   geom_density(alpha=0.2)
 
 
 ```
 
-> We know that there are typically restrictions around what you can borrow depending on what you earn, but it is interesting to see this played out in the above plot. We can again see these spikes played out around round multiples to borrow (e.g. 15k shows a number of Income Ranges that are peaking.) The most interesting thing here it the prevalence of a $0 range. This may either be due to a data inputting error or around the use of collateral for loans. In this data we were using factor variables and so I used R to put these into order and also removed 'not displayed' and 'not employed'. Below are some statistics drawn from the data used in the graph above.
+> We know that there are typically restrictions around what you can borrow depending on what you earn, but it is interesting to see this played out in the above plot. We can again see these spikes played out around round multiples to borrow (e.g. 15k shows a number of Income Ranges that are peaking.) The most interesting thing here it the prevalence of a $0 range. This may either be due to a data inputting error or around the use of collateral for loans. In this data we were using factor variables and so I used R to put these into order and also removed 'not displayed' and 'not employed'. Below are some statistics drawn from the data used in the graph above. I think this is interesting and the reason behind this was too see if there was a dramatic difference in what different people with differnt income ranges may borrow.
 
 
 
 ```{r echo=FALSE, Bivariate_Plots3}
 
+#here we are viewing some stats on the income range data point and loan amounts
 by(df$LoanOriginalAmount, factor(df$IncomeRange), summary)
 
 ```
@@ -139,25 +192,29 @@ by(df$LoanOriginalAmount, factor(df$IncomeRange), summary)
 #create a new dataframe that removes top 1% so that the graph plots correctly
 df1 <- df[df$StatedMonthlyIncome < quantile(df$StatedMonthlyIncome, 0.99),]
 
-ggplot(subset(df1,  BorrowerState == 'CT'), aes(StatedMonthlyIncome, MonthlyLoanPayment)) + 
+#this will plot a graph that looks at only Conneticut and looks at income compared to loan payments
+#we use stat_smooth to look get a trend line
+ggplot(subset(df1,  BorrowerState == 'CT'), 
+       aes(StatedMonthlyIncome, MonthlyLoanPayment)) + 
   geom_point(alpha=0.1) + 
   stat_smooth(method = "lm", formula = y ~ x)
 
 ```
 
->The graph above looks at Loan Payments and Montly Income. The underlying data excludes the top 1% of earners and this chart only looks at residents of Connecticut. The reasoning behind this is due to the amount of entries, using subsets helps give us a better idea of trends. We can see that as expected, the more that is earned a month the higher than loan payments typically are.
+>The graph above looks at Loan Payments and Montly Income. The underlying data excludes the top 1% of earners and this chart only looks at residents of Connecticut. The reasoning behind this is due to the amount of entries, using subsets helps give us a better idea of trends. We can see that as expected, the more that is earned a month the higher than loan payments typically are. This is interesting to see as we can understand what a lower income state earnts a month compared to what they pay for loans.
 
 
 
 ```{r echo=FALSE, Bivariate_Plots5}
-
-ggplot(subset(df1,  BorrowerState == 'WV'), aes(StatedMonthlyIncome, MonthlyLoanPayment)) + 
+#here we view the same graph but look at West Virgina
+ggplot(subset(df1,  BorrowerState == 'WV'), aes(StatedMonthlyIncome, 
+                                                MonthlyLoanPayment)) + 
   geom_point(alpha=0.2) + 
   stat_smooth(method = "lm", formula = y ~ x)
 
 ```
 
->The above chart show similiar data to the one before it, but now we are looking at residents of West Virgina.
+>The above chart show similiar data to the one before it, but now we are looking at residents of West Virgina. The reason behind this is that it allowed us to compare against the information for Conneticut.
 
 # Bivariate Analysis
 
@@ -178,6 +235,7 @@ the dataset?
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots1}
 
+#here we look at information based on income range in conneticut only, it is colored based on the income range
 ggplot(subset(df1,  BorrowerState == 'CT', IncomeRange != 'NA'), 
        aes(x=StatedMonthlyIncome, y=MonthlyLoanPayment,
            color=factor(IncomeRange))) + 
@@ -187,59 +245,108 @@ ggplot(subset(df1,  BorrowerState == 'CT', IncomeRange != 'NA'),
 
 ```
 
->Below is a breakdown of statistics for Monthly Loan Payment by Income Range
+>The above shows us how monthyly income in Connecticut compares to Loans, but also breaks it out by Income Range. This is interesting as it allows to easily see (via colours) the outliers in different groups, and that was the reason for this graph.
+
+>The below chart is looking at DC and it shows us credit scores vs income ranges. The idea behind this is to see if we are see if trends in Income Ranges relate to credit scores.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots2}
 
-by(df$MonthlyLoanPayment, factor(df$IncomeRange), summary)
 
-```
-
->Here we can again see the Monthly Income and Payments but we have added colour to denote what income range the Loanee falls within. We can see the clear boundaries and we can more clearly in what range the anomalies fall. Again, this is only looking at the state of Conneticut.
+#the chart uses different size circles and different colours to short information
+#the chart 3 is then used with a theme package to alter how it appears
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots3}
-
-ggplot(subset(df1,  BorrowerState == 'CT', IncomeRange != 'NA'), 
-       aes(x=StatedMonthlyIncome, y=MonthlyLoanPayment,
-           size=ProsperRating..numeric.)) + 
+ggplot(subset(df, BorrowerState == 'DC' 
+                        & CreditScoreRangeLower > 500), 
+       aes(x=LoanOriginalAmount, y=CreditScoreRangeLower,
+           color=factor(IncomeRange))) + 
     
-    geom_point(alpha=0.1, color = '#099DD9') + 
+    geom_point() + 
     scale_color_brewer()
 
 ```
 
-> Again looking only at the state of Conneticut, we have added in Prosper rating which is used and affects the size of each point. Prosper rating is used to categorise each Loanee by level of risk. The lower the number (or smaller the point in the plot) the higher risk they are. We can see above an example of this clearly, where a Loanee with a prosper rating of 1 has monthly income of just under 20,000, but rapyments of lower than 500. It is possible that the Prosper rating was the cause of such small repayments relative to monthly income.
 
->Below is a breakdown of statistics for Monthly Loan Payment by Prosper Rating
+>Below is a breakdown of statistics for Monthly Loan Payment by Income Range
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots3}
+
+#here are some stats on loan payment data when looking at income ranges
+by(df$MonthlyLoanPayment, factor(df$IncomeRange), summary)
+
+```
+
+
+
+>Here we can again see the Monthly Income and Payments but we have added colour to denote what income range the Loanee falls within. We can see the clear boundaries and we can more clearly in what range the anomalies fall. Again, this is only looking at the state of Conneticut.
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots4}
 
+#here we look at data using the Prosper Rating annd instead of chaing colour we vary the size of the circle
+#the size of the circle denotes different Prosep Ratings
+ggplot(subset(df1,  BorrowerState == 'CT', IncomeRange != 'NA'), 
+       aes(x=StatedMonthlyIncome, y=MonthlyLoanPayment,
+           color=factor(ProsperRating..numeric.))) + 
+    
+    geom_jitter() + 
+    scale_color_brewer()
+
+```
+
+> Again looking only at the state of Conneticut, we have added in Prosper rating which is used and affects the size of each point. Prosper rating is used to categorise each Loanee by level of risk. The lower the number (or smaller the point in the plot) the higher risk they are. We can see above an example of this clearly, where a Loanee with a prosper rating of 1 has monthly income of just under 20,000, but rapyments of lower than 500. It is possible that the Prosper rating was the cause of such small repayments relative to monthly income. The reason behind this was that it helps show us info around how the Prosper rating may affect the Income vs Loan data.  The reason that we have use 'jitter' above is that it helps add some noise to the data to help prevent overplotting, it also helps us see trends more clearly.
+
+>Below is a breakdown of statistics for Monthly Loan Payment by Prosper Rating
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots5}
+
+#this shows stats on Prosper Ratings and the size of monthly loan payments
 by(df$MonthlyLoanPayment, factor(df$ProsperRating..numeric.), summary)
 
 ```
 
 >Below is a breakdown of statistics for Monthly Income by Prosper Rating
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots5}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots6}
 
+#this shows stats on Prosper Ratings and the size of monthly income
 by(df$StatedMonthlyIncome, factor(df$ProsperRating..numeric.), summary)
 
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots6}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots7}
 
+#this shows different credit scores based on Prosper rating, with colours denoting different ratings
 ggplot(subset(df1,  CreditScoreRangeLower > 500), 
        aes(x=LoanOriginalAmount, y=CreditScoreRangeLower,
            color=factor(ProsperRating..numeric.))) + 
     
-    geom_point(alpha=0.25) + 
+    geom_jitter() + 
     scale_color_brewer()
 
 ```
 
->This chart now includes all data from the dataset. We are looking at the TOtal Loan Amount, the Credit Score and the Prosper Rating. The trends that are most obvious to start with are that there are higher prospect ratings in the top left of the chart, with the lower amounts and higher credit scores. This obviously makes sense.
+>This chart now includes all data from the dataset. We are looking at the TOtal Loan Amount, the Credit Score and the Prosper Rating. The trends that are most obvious to start with are that there are higher prospect ratings in the top left of the chart, with the lower amounts and higher credit scores. This obviously makes sense. This helps show us how close the Prosper rating is affected byt Credit Rating via colours. The reason that we have use 'jitter' above is that it helps add some noise to the data to help prevent overplotting, it also helps us see trends more clearly.
+
+>The below information shows us some of what we have already seen in terms of income range and prosper rating, but this shows us all the information together in one chart. The reason behind this is so that we can see how the variables all relate to each other.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots8}
+
+
+#the chart uses different size circles and different colours to short information
+#the chart 2 is then used with a theme package to alter how it appears
+ggplot(subset(df,  BorrowerState == 'DC'), 
+       aes(x=StatedMonthlyIncome, y=MonthlyLoanPayment,
+            color=factor(IncomeRange),
+           size=ProsperRating..numeric.)) + 
+    
+    geom_point(alpha=0.35) + 
+    scale_color_brewer()
+
+
+```
+
 
 # Multivariate Analysis
 
@@ -256,7 +363,11 @@ looking at your feature(s) of interest?
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_One}
 
-chart1 <- ggplot(subset(df,  IncomeRange != 'Not displayed'), aes(x=LoanOriginalAmount, fill=factor(IncomeRange))) + 
+#we are using 'chart 1' to create the chart, which shows the icnome range data and loan amounts
+#the chart is an overlay
+#the chart 1 is then used with a theme package to alter how it appears
+chart1 <- ggplot(subset(df,  IncomeRange != 'Not displayed'), 
+                 aes(x=LoanOriginalAmount, fill=factor(IncomeRange))) + 
   geom_density(alpha=0.2) + 
     labs(title = 'Density Plot of Loan Amount by Income Range',
          x = 'Original Loan Amount',
@@ -269,12 +380,15 @@ chart1 + theme_economist(base_family="Verdana") +
 ```
 
 ### Density Plot of Loan Amount by Income Range
-> This plot shows the Loan Amount of differing Income ranges. I think that this plot shows the habits or various Loanee's well as you can understand that that with a lower income may use small loans to pay for things like bills or unexpected accidents, as they may not have much saved to cover these costs. It also shows the general borrowing habits of higher earnings, who cannot only borrow more, but may be likely to be using the resulting loan to purchase more expensive goods.
+> This plot shows the Loan Amount of differing Income ranges. I think that this plot shows the habits or various Loanee's well as you can understand that that with a lower income may use small loans to pay for things like bills or unexpected accidents, as they may not have much saved to cover these costs. It also shows the general borrowing habits of higher earnings, who cannot only borrow more, but may be likely to be using the resulting loan to purchase more expensive goods. The reason that we are showing the difference in borrowing habits by Income Range and we can see if these were linked.
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Two}
 
-
+#the df2 crates a new dataframe that excludes any lines in the Income range data points that is blank
+#we are using 'chart 2' to create the chart, which shows monthly income vs loan payments
+#the chart uses different size circles and different colours to short information
+#the chart 2 is then used with a theme package to alter how it appears
 df2 <- df1[complete.cases(df1$IncomeRange), ]
 
 chart2 <- ggplot(subset(df2,  BorrowerState == 'DC'), 
@@ -296,20 +410,25 @@ chart2 + theme_economist(base_family="Verdana") +
 ```
 
 ### Monthly Income vs Loan Payment in Washington, D.C.
->This graph combines two that we saw earlier buy looks at Washington, D.C. instead. It gives more information about the Prosper rating and income range vs Monthly Payments and Income. We can see the same trend of lower incomes typically being bunched closer together with the higher earners having a lot more variation in terms of the Income vs Payments. It is also not neccesarily the case the more you earn the higher your rating.
+>This graph combines two that we saw earlier buy looks at Washington, D.C. instead. It gives more information about the Prosper rating and income range vs Monthly Payments and Income. We can see the same trend of lower incomes typically being bunched closer together with the higher earners having a lot more variation in terms of the Income vs Payments. It is also not neccesarily the case the more you earn the higher your rating. After looking at income data above it was helpful for us to see this information plotted again but now looking at the Income vs Loan Payment data.
 
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Three}
 
+#df3 creates a new dataframe that excludes any lines where the Prosper Rating is blank
+#we are using 'chart 3' to create the chart, which shows the icnome range data and loan amounts
+#the chart uses different size circles and different colours to short information
+#the chart 3 is then used with a theme package to alter how it appears
 df3 <- df2[complete.cases(df1$ProsperRating..numeric.), ]
 
-chart3 <- ggplot(subset(df3,  BorrowerState == 'DC' & CreditScoreRangeLower > 500), 
+chart3 <- ggplot(subset(df3, BorrowerState == 'DC' 
+                        & CreditScoreRangeLower > 500), 
        aes(x=LoanOriginalAmount, y=CreditScoreRangeLower,
            size=ProsperRating..numeric.,
            color=factor(IncomeRange))) + 
     
-    geom_point(alpha=0.35) + 
+    geom_jitter() + 
     scale_color_brewer() +
     labs(title = 'Credit Score vs Loan Amount in D.C.',
          x = 'Loan Amount',
@@ -324,7 +443,7 @@ chart3 + theme_economist(base_family="Verdana") +
 
 ### Credit Score vs Loan Amount in Washington, D.C.
 
-> This chart takes another look at the Income and Prosper Rating in D.C. but now we are looking at the relationship to the lower range of the Credit Rating. We can see from this graph that the Prosper Rating is lower for those with a lower credit score, as we would expect, but we can also see that there are those with small loan amounts and scores around 700 that also have a low rating.
+> This chart takes another look at the Income and Prosper Rating in D.C. but now we are looking at the relationship to the lower range of the Credit Rating. We can see from this graph that the Prosper Rating is lower for those with a lower credit score, as we would expect, but we can also see that there are those with small loan amounts and scores around 700 that also have a low rating. The reasoning behind choosing this plot was to enable us to see if the Prosper rating was liable to correlate to certain loan amounts.
 
 ------
 
