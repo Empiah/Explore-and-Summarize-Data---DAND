@@ -72,9 +72,20 @@ grid.arrange(qplot(x = LoanOriginalAmount,
 
 >We can see that these are both right skewed
 
->Now lets look at information on Loan amounts by state, to see if these differ, we have intentionally picked out two states that are very different in terms of wealth per capita
+>Now lets look at the amount of loans that the typical loanee may already have with Prosper
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots3}
+
+#view a histogram of two data points side by side
+qplot(x = TotalProsperLoans, 
+                   data = df, binwidth=1)
+```
+
+>This shows us taht a substantial amount of people already have loans with Prosper and are requesting an additional one
+
+>Now lets look at information on Loan amounts by state, to see if these differ, we have intentionally picked out two states that are very different in terms of wealth per capita
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots4}
 
 #view two more histograms, this time we are filtering by state and looking at the same statistic in two different states
 grid.arrange(qplot(x = LoanOriginalAmount, 
@@ -92,9 +103,9 @@ grid.arrange(qplot(x = LoanOriginalAmount,
 >Now lets look at some catergorical variables
 >First we are looking at the counts of homeowners vs non homeowners to see if they prefer to offer to loanee's with a home to use as collateral.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots4}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots5}
 
-#pie chart to show homeowner information
+#chart to show homeowner information
 ggplot(df, aes(x = IsBorrowerHomeowner)) + geom_bar() + 
     geom_text(stat='count', aes(label=..count..), vjust=1.5)
 ```
@@ -103,20 +114,32 @@ ggplot(df, aes(x = IsBorrowerHomeowner)) + geom_bar() +
 
 >Now lets look at the count of Loanee's by there Income Range, the reason behind this is so that we can see if there is a preference for the company when offering loans or if they specialise in offering to a certain type of Loanee.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots5}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots6}
 
-#pie chart to show income range information
+#chart to show income range information
 ggplot(df, aes(x = IncomeRange)) + geom_bar() + 
-    geom_text(stat='count', aes(label=..count..), vjust=1.5)
+    geom_text(stat='count', aes(label=..count..), vjust=1.5) + 
+    theme(axis.text.x = element_text(angle = 25, hjust = 1))
 ```
 
 >We can see here that it is quite distributed, going forward we will sort this data so it is ordered correctly
 
+>Now lets look at the terms of the loans so we can understand how long people typically borrow for
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots7}
+
+#chart to show income range information
+ggplot(df, aes(x = Term)) + geom_bar() + 
+    geom_text(stat='count', aes(label=..count..), vjust=1.5)
+```
+
+>We can see here that the normal term is 36 months, or 3 years. This shows us that the loans are quite short term and wouldnt be used for anything like buying a property (typical mortgage loan would be around 25-35 years)
+
 >Finally lets look at Prosper Rating, the lower the number the more risky the Loanee is deemed to be
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots6}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots8}
 
-#pie chart to show Prosper Rating information
+#chart to show Prosper Rating information
 ggplot(df, aes(x = ProsperRating..numeric.)) + geom_bar() + 
     geom_text(stat='count', aes(label=..count..), vjust=1.5)
 ```
@@ -294,7 +317,7 @@ ggplot(subset(df1,  BorrowerState == 'CT', IncomeRange != 'NA'),
 
 ```
 
-> Again looking only at the state of Conneticut, we have added in Prosper rating which is used and affects the size of each point. Prosper rating is used to categorise each Loanee by level of risk. The lower the number (or smaller the point in the plot) the higher risk they are. We can see above an example of this clearly, where a Loanee with a prosper rating of 1 has monthly income of just under 20,000, but rapyments of lower than 500. It is possible that the Prosper rating was the cause of such small repayments relative to monthly income. The reason behind this was that it helps show us info around how the Prosper rating may affect the Income vs Loan data.  The reason that we have use 'jitter' above is that it helps add some noise to the data to help prevent overplotting, it also helps us see trends more clearly.
+> Again looking only at the state of Conneticut, we have added in Prosper rating which is used and affects the size of each point. Prosper rating is used to categorise each Loanee by level of risk. The lower the number (or smaller the point in the plot) the higher risk they are. We can see above an example of this clearly, where a Loanee with a prosper rating of 1 has monthly income of just under 20,000, but repayments of lower than 500. It is possible that the Prosper rating was the cause of such small repayments relative to monthly income. The reason behind this was that it helps show us info around how the Prosper rating may affect the Income vs Loan data.  The reason that we have use 'jitter' above is that it helps add some noise to the data to help prevent overplotting, it also helps us see trends more clearly.
 
 >Below is a breakdown of statistics for Monthly Loan Payment by Prosper Rating
 
@@ -337,11 +360,10 @@ ggplot(subset(df1,  CreditScoreRangeLower > 500),
 #the chart uses different size circles and different colours to short information
 #the chart 2 is then used with a theme package to alter how it appears
 ggplot(subset(df,  BorrowerState == 'DC'), 
-       aes(x=StatedMonthlyIncome, y=MonthlyLoanPayment,
-            color=factor(IncomeRange),
-           size=ProsperRating..numeric.)) + 
+       aes(x=LoanOriginalAmount, y=CreditScoreRangeLower,
+            color=factor(ProsperRating..numeric.))) + 
     
-    geom_point(alpha=0.35) + 
+    geom_jitter() + 
     scale_color_brewer()
 
 
@@ -396,7 +418,7 @@ chart2 <- ggplot(subset(df2,  BorrowerState == 'DC'),
             color=factor(IncomeRange),
            size=ProsperRating..numeric.)) + 
     
-    geom_point(alpha=0.35) + 
+    geom_point(alpha=0.90) + 
     scale_color_brewer() + 
     labs(title = 'Monthly Income vs Loan Payment in D.C.',
          x = 'Monthly Income (top 1% Removed)',
@@ -443,7 +465,7 @@ chart3 + theme_economist(base_family="Verdana") +
 
 ### Credit Score vs Loan Amount in Washington, D.C.
 
-> This chart takes another look at the Income and Prosper Rating in D.C. but now we are looking at the relationship to the lower range of the Credit Rating. We can see from this graph that the Prosper Rating is lower for those with a lower credit score, as we would expect, but we can also see that there are those with small loan amounts and scores around 700 that also have a low rating. The reasoning behind choosing this plot was to enable us to see if the Prosper rating was liable to correlate to certain loan amounts.
+> This chart takes another look at the Income and Prosper Rating in D.C. but now we are looking at the relationship to the lower range of the Credit Rating. In the multivariate analysis we saw both of these variables along with Prosper Rating and again with Income Range in graphs, but we can use the above to see the relationship between the two. We can see from this graph that the Prosper Rating is lower for those with a lower credit score, as we would expect, but we can also see that there are those with small loan amounts and scores around 700 that also have a low rating. The reasoning behind choosing this plot was to enable us to see if the Prosper rating was liable to correlate to certain loan amounts.
 
 ------
 
